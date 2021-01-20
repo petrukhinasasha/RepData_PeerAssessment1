@@ -5,9 +5,7 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 # Introduction
 
@@ -40,81 +38,124 @@ Questions:
 
 
 Setting global options for making code visible in the finished file.
-```{r set, echo=TRUE}
+
+```r
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Loading and preprocessing the data
 
 Loading data and setting classes of the columns.
-```{r load_data}
+
+```r
 unzip("activity.zip")
 activity <- read.csv("activity.csv", colClasses = c("numeric", "Date", "numeric"))
 ```
 
 Exploring the basics of the data.
-```{r explore_data}
+
+```r
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: num  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
 dim(activity)
+```
+
+```
+## [1] 17568     3
+```
+
+```r
 summary(activity)
+```
+
+```
+##      steps             date               interval     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5  
+##  3rd Qu.: 12.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0  
+##  NA's   :2304
 ```
 
 ## What is mean total number of steps taken per day?
 
 Calculating the total number of steps taken per day (excluding missing data).
-```{r steps_per_day}
+
+```r
 total_steps_per_day <- aggregate(steps ~ date, activity, sum, na.rm = TRUE)
 ```
 
 Creating a histogram of total steps per day frequency.
-```{r hist_1}
+
+```r
 with(total_steps_per_day, 
      hist(steps, breaks = seq(0, 25000, by = 2500), col = "darkturquoise",
      xlab = "Steps per day", ylim = c(0, 20), labels = TRUE, 
      main = "Total number of steps taken per day"))
 ```
 
+![](PA1_template_files/figure-html/hist_1-1.png)<!-- -->
+
 Calculating the mean and the median of steps per day.
-```{r mean_median}
+
+```r
 mean_total_steps_per_day <- round(mean(total_steps_per_day$steps))
 median_total_steps_per_day <-median(total_steps_per_day$steps)
 ```
 
-Therefore, the mean value of total steps per day is **`r toString(mean_total_steps_per_day)`**, and the median value is **`r toString(median_total_steps_per_day)`**.
+Therefore, the mean value of total steps per day is **10766**, and the median value is **10765**.
 
 *To show mean and median value in the text correctly we need to use "r toString(mean_total_steps_per_day)" and "r toString(median_total_steps_per_day)".*
 
 ## What is the average daily activity pattern?
 Calculating the mean vulue of steps for each interval (excluding missing data).
-```{r mean_interval}
+
+```r
 average_daily_steps <- aggregate(steps ~ interval, activity, mean, na.rm = TRUE)
 ```
 
 Creating a time series plot of the 5-minute interval and the average number of steps taken.
-```{r line_1}
+
+```r
 with(average_daily_steps, 
      plot(interval, steps, type = "l", col = "firebrick2",
      ylab = "Average number of steps", xlab ="Interval",
      main = "Average number of steps per 5-minute interval"))
 ```
 
+![](PA1_template_files/figure-html/line_1-1.png)<!-- -->
+
 Finding the 5-minute interval, which contains the maximum number of steps.
-```{r max_interval}
+
+```r
 max_interval <- average_daily_steps[which.max(average_daily_steps$steps), ]$interval
 ```
 
-Therefore, the interval, containing the maximum number of steps, is **`r toString(max_interval)`**.
+Therefore, the interval, containing the maximum number of steps, is **835**.
 
 ## Imputing missing values
 Calculating the total number of missing values in the dataset.
-```{r NA_num}
+
+```r
 na_num <- sum(is.na(activity$steps))
 ```
 
-So we have **`r toString(na_num)`** rows with missing values.
+So we have **2304** rows with missing values.
 
 Missing values will be fulfilled by mean values from the previous step. The result will be saved to the new dataset.
-```{r impute_NA}
+
+```r
 activity_impute <- activity
 activity_impute$steps <- ifelse(is.na(activity_impute$steps),
                                 round(average_daily_steps$steps[match(activity_impute$interval,
@@ -123,37 +164,44 @@ activity_impute$steps <- ifelse(is.na(activity_impute$steps),
 
 
 Calculating the total number of steps taken per day (excluding missing data).
-```{r steps_per_day_new}
+
+```r
 total_steps_per_day_new <- aggregate(steps ~ date, activity_impute, sum, na.rm = TRUE)
 ```
 
 Creating a histogram of total steps per day frequency.
-```{r hist_2}
+
+```r
 with(total_steps_per_day_new, 
      hist(steps, breaks = seq(0, 25000, by = 2500), col = "darkseagreen",
      xlab = "Steps per day", ylim = c(0, 30), labels = TRUE, 
      main = "Total number of steps taken per day"))
 ```
 
+![](PA1_template_files/figure-html/hist_2-1.png)<!-- -->
+
 Culculating the mean and the median of steps per day in the imputed data.
-```{r mean_median_new}
+
+```r
 mean_total_steps_per_day_new <- round(mean(total_steps_per_day_new$steps))
 median_total_steps_per_day_new <-median(total_steps_per_day_new$steps)
 ```
 
-Therefore, the mean value of total steps per day is **`r toString(mean_total_steps_per_day_new)`**, and the median value is **`r toString(median_total_steps_per_day_new)`**. 
+Therefore, the mean value of total steps per day is **10766**, and the median value is **10762**. 
 
 As we can see, the mean and median almost haven't changed.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Adding the weekdays variable.
-```{r add_weekday}
+
+```r
 activity$weekday <- weekdays(activity$date)
 ```
 
 Adding the type of the weekday.
-```{r add_weekday_type}
+
+```r
 activity$day_type <- sapply(activity$date, function(x) {
         if(weekdays(x) == "Saturday" | weekdays(x) == "Sunday")
         {y <- "Weekend"} else 
@@ -163,12 +211,14 @@ activity$day_type <- sapply(activity$date, function(x) {
 ```
 
 Calculating the mean value of steps per interval and type of the day.
-```{r steps_by_day_type}
+
+```r
 steps_per_day_type <- aggregate(steps ~ interval + day_type, activity, mean, na.rm = TRUE)
 ```
 
 Plotting the average number of steps per interval divided by day type.
-```{r ggplot_line}
+
+```r
 library(ggplot2)
 ggplot(steps_per_day_type, aes(interval, steps, color = day_type)) +
         facet_wrap(~day_type, ncol = 1, nrow=2) + 
@@ -179,3 +229,5 @@ ggplot(steps_per_day_type, aes(interval, steps, color = day_type)) +
         scale_color_manual(values = c("Weekday" = "darkorchid",
                                      "Weekend" = "goldenrod2"))
 ```
+
+![](PA1_template_files/figure-html/ggplot_line-1.png)<!-- -->
